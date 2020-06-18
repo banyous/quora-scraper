@@ -9,10 +9,10 @@ Quora-scraper simulates a browser environment to let you scrape Quora rich textu
 
 ## Install
 To use our scraper, please follow the steps below:
-- install the latest version of google-chrome.
-- install python 3.6 or upper versions.
-- download chromedriver and add it to your sys path:  https://sites.google.com/a/chromium.org/chromedriver/home 
-- install quora-scraper:
+- Install python 3.6 or upper versions.
+- Install the latest version of google-chrome.
+- Download chromedriver and add it to your sys path:  https://sites.google.com/a/chromium.org/chromedriver/home 
+- Install quora-scraper:
 
 ```sh
 $ pip install quora-scraper
