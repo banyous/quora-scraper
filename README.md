@@ -11,11 +11,14 @@ Quora-scraper simulates a browser environment to let you scrape Quora rich textu
 To use our scraper, please follow the steps below:
 - install the latest version of google-chrome.
 - install python 3.6 or upper versions.
+- download chromedriver and add it to your sys path:  https://sites.google.com/a/chromium.org/chromedriver/home 
 - install quora-scraper:
+
 ```sh
 $ pip install quora-scraper
 ```
 To update quora-scraper:
+
 ```sh
 $ pip install quora-scraper --upgrade
 ```
@@ -51,6 +54,7 @@ Scraping answers can be done as follows:
     ```sh
     $ quora-scraper answers -k [https://www.quora.com/Is-milk-good,https://www.quora.com/Was-Einstein-a-fake-and-a-plagiarist]
     ```
+
 - b)  Use "-f" parameter + question URLs file location:
  
     ```sh
@@ -74,11 +78,11 @@ Scraping Users profile can be done as follows:
 - b)  Use "-f" parameter + User-IDs file. 
 
     ```sh
-    $ quora-scraper users -f Quora_users_ids.txt
+    $ quora-scraper users -f quora_username_file.txt
     ```
 
 ### Note 
-a) Please note that all input files have tab separated fields.
+a) Please note that all output files have tab separated fields.
 
 b) You can add a list/line index parameter In order to start the scraping from that index. The code below will start scraping from "physics" keyword:
     ```sh
