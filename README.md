@@ -29,7 +29,9 @@ $ pip install quora-scraper --upgrade
 quora-scraper has three scraping modules : ```questions``` ,```answers```,```users```.
 #### 1) Scraping questions URL:
 
-You can scrape questions related to certain topics using ```questions``` command. This module takes as an input a list of topic keywords. Output is a questions_URL file for each topic saved under QuestionsURLs/ directory. Scraping a topic questions can be done as follows:
+You can scrape questions related to certain topics using ```questions``` command. This module takes as an input a list of topic keywords. Output is a questions_URL file for each topic saved under QuestionsURLs/ directory. 
+
+Scraping a topic questions can be done as follows:
 
 - a) Use "-k" parameter + topic keywords list.
 
@@ -46,7 +48,9 @@ You can scrape questions related to certain topics using ```questions``` command
 #### 2) Scraping answers:
 
 Quora answers are scraped using ```answers``` command. This module takes as an input a list of Questions URL. Output is a file of scraped answers (answers.txt). Each answer consists of :
+
 Quest-ID | AnswerDate | AnswerAuthor-ID | Quest-tags | Answer-Text 
+
 Scraping answers can be done as follows:
 
 - a) Use "-k" parameter + question URLs list. 
@@ -64,10 +68,13 @@ Scraping answers can be done as follows:
 #### 3) Scraping Quora user profile:
 
 You can scrap Quora Users profile using ```users``` command. This module takes as an input a list of Quora user IDs. Output is UserProfile file for eah UserID saved under the Qusers/ directory, Users data consists of :
+
 	First line :
 UserID | ProfileDescription |ProfileBio | Location | TotalViews |NBAnswers | NBQuestions | NBFollowers |  NBFollowing
+
 	Remaining lines (User's answers):
 AnswerDate | QuestionID | AnswerText 
+
 Scraping Users profile can be done as follows:
 
 - a) Use "-k" parameter + User-IDs list. 
