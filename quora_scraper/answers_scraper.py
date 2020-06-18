@@ -14,7 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import dateparser
-from connectChrome import connectchrome
+from .connectChrome import connectchrome
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------

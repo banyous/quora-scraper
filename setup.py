@@ -9,8 +9,8 @@ def readme():
     
 setup(
   name = 'quora-scraper',
-  packages = ['quora-scraper'],
-  version = '1.0.2',
+  packages = ['quora_scraper'],
+  version = '1.0.6',
   license='MIT',
   description = "Python based code to scrap and download data from quora website: questions related to certain topics, answers given on certain questions and users profile data",
   long_description=readme(),
@@ -20,6 +20,7 @@ setup(
   url="https://github.com/banyous/quora-scraper",
   download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',
   keywords = ['quora', 'topics', 'Q&A','user','scraper', 'download','answers','questions'],
+  include_package_data=True,
   install_requires=[
 			'selenium',
 			'bs4',
@@ -28,7 +29,7 @@ setup(
       ],
   entry_points={
 	"console_scripts": [
-	    "quora-scraper=quora-scraper.quora-scraper:main",
+	    "quora-scraper=quora_scraper.scraper:main",
         ]
     },
   classifiers=[

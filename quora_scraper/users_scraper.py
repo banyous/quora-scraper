@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from connectChrome import connectchrome
+from .connectChrome import connectchrome
 from datetime import datetime, timedelta
 import dateparser
 
@@ -113,7 +113,10 @@ def users(param, users_file_or_list, list_index):
     wait = WebDriverWait(browser, 10)
     # find starting line : current line, which starts from the index of last crawled user
     current_index = int(list_index)-1
-
+       
+    # Path where we save user profiles   
+    pathlib.Path('Users').mkdir(parents=True, exist_ok=True)
+    save_path= Path.cwd() / Path("Users")
     # Loop over the QuoraIDs to scrap their profile content
     while True:
         print('_______________________________________________________________')
@@ -221,8 +224,6 @@ def users(param, users_file_or_list, list_index):
 
         print('nb answers',nbanswers)
         # Open User profile file (save file)
-        pathlib.Path('Users').mkdir(parents=True, exist_ok=True)
-        save_path= Path.cwd() / Path("Users")
         save_file= save_path /  str( user_id + '.txt')
         file_user_profile = open(save_file, "w", encoding="utf8")
         quora_profile_information['user_id'] = user_id

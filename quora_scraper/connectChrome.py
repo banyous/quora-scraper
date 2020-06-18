@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
+from pathlib import Path
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -12,7 +14,7 @@ def connectchrome():
     options.add_argument("--incognito")
     options.add_argument("--no-sandbox");
     options.add_argument("--disable-dev-shm-usage");
-    driver_path=os.getcwd()+ "/chromedriver"
+    driver_path= Path.cwd() / "chromedriver"
     driver = webdriver.Chrome(executable_path=driver_path, options=options)
     driver.maximize_window()
     time.sleep(2)

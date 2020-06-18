@@ -1,9 +1,9 @@
 # __main__.py
 import  sys
 import datetime
-from questions_url_scraper import questions
-from answers_scraper import answers
-from users_scraper import users
+from .questions_url_scraper import questions
+from .answers_scraper import answers
+from .users_scraper import users
 
 def main():
     # start time

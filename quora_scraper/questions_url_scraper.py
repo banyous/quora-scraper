@@ -1,4 +1,4 @@
-from connectChrome import connectchrome
+from .connectChrome import connectchrome
 from bs4 import BeautifulSoup
 import os
 import pathlib
