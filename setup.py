@@ -17,7 +17,6 @@ setup(
   long_description_content_type="text/markdown",
   author = 'Youcef Benkhedda',
   author_email = 'y_benkhedda@esi.dz',
-  url = 'https://github.com/banyous',
   url="https://github.com/banyous/quora-scraper",
   download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',
   keywords = ['quora', 'topics', 'Q&A','user','scraper', 'download','answers','questions'],
