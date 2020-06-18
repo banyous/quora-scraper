@@ -69,10 +69,10 @@ Scraping answers can be done as follows:
 
 You can scrap Quora Users profile using ```users``` command. This module takes as an input a list of Quora user IDs. Output is UserProfile file for eah UserID saved under the Qusers/ directory, Users data consists of :
 
-	First line :
+First line :
 UserID | ProfileDescription |ProfileBio | Location | TotalViews |NBAnswers | NBQuestions | NBFollowers |  NBFollowing
 
-	Remaining lines (User's answers):
+Remaining lines (User's answers):
 AnswerDate | QuestionID | AnswerText 
 
 Scraping Users profile can be done as follows:
