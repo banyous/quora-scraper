@@ -20,7 +20,6 @@ setup(
   url="https://github.com/banyous/quora-scraper",
   download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',
   keywords = ['quora', 'topics', 'Q&A','user','scraper', 'download','answers','questions'],
-  packages=["scrap-quora"],
   install_requires=[
 			'selenium',
 			'bs4',
