@@ -13,6 +13,7 @@ from pathlib import Path
 import random
 import userpaths
 import dateparser
+import argparse
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -105,7 +106,7 @@ def scrolldown(self,type_of_page='users'):
 # -------------------------------------------------------------
 # -------------------------------------------------------------	
 # questions urls crawler 
-def questions(topics_list):
+def questions(topics_list,save_path):
 	browser=connectchrome()
 	topic_index=-1
 	loop_limit=len(topics_list)
@@ -417,12 +418,11 @@ def users(users_list,save_path):
 				print(' User does not exists or does not have answers...')
 				continue
 
-		print('nb answers',nbanswers)
 		# Open User profile file (save file)
 		save_file= save_path /  str( user_id + '.txt')
 		file_user_profile = open(save_file, "w", encoding="utf8")
 		quora_profile_information['user_id'] = user_id
-
+		
 		# writing answers stats to file
 		quora_profile_information['nb_answers']=nbanswers
 		quora_profile_information['nb_questions']=nbquestions
@@ -430,13 +430,11 @@ def users(users_list,save_path):
 		quora_profile_information['nb_following']=nbfollowing
 		json.dump(quora_profile_information,file_user_profile)
 		file_user_profile.write('\n')
-		print('user has ', nbanswers,' amswers')
+		
 		# scroll down profile for loading all answers
-		repeat=False
-		if int(nbanswers)>30:
-			repeat=True
+		print('user has ', nbanswers,' answers')
 		if int(nbanswers)>9:
-			scrolldown(browser,repeat)
+			scrolldown(browser)
 		# get answers text (we click on (more) button of each answer)
 		if int(nbanswers)>0:
 			#print('scrolling down for answers collect')
@@ -481,69 +479,49 @@ def users(users_list,save_path):
 	
 # -------------------------------------------------------------
 # -------------------------------------------------------------
-# function for reading terminal arguments : arg1,arg2,arg3
-
-def read_args(param_letter,input_keywords,line_index=0):
-
-	keywords_list = []
-	if param_letter.strip().lower()=='-f':
-		try:
-			# read keywords (topics, or questions urls, or userIDs)
-			if Path(input_keywords).is_file():
-				keywords_file = open(input_keywords, mode='r', encoding='utf-8')
-			else:  # if file not found, we try to open it in the local dir
-				keywords_file = open(Path.cwd() / input_keywords, mode='r', encoding='utf-8')
-			keywords_list = keywords_file.readlines()
-			keywors_file.close()
-			keywords_list=[t.strip() for t in keywords_list]
-		except:
-			print('Error: invalid file path. Please make sure to provide the correct to the keywords file')
-	elif str(param_letter).strip().lower() =='-k':
-		try:
-			keywords_list =  [e for e in input_keywords.strip('[]').split(',')]
-		except:
-			print("Error: invalid keyword list format. Please provide valid list format such as: ['key1','key2','key3'] ")
-	else:
-		print('Error: invalid parameter letter value. Please only choose between -k and -f parameters')
-	
-	return keywords_list[line_index:]
-
-# -------------------------------------------------------------
-# -------------------------------------------------------------
+    
 def main():
 	start_time = datetime.now()
-	list_index=0
-	# we accept only 3 or 4 sys arguments
-	nb_arguments= len(sys.argv)
+	parser=argparse.ArgumentParser()
+	parser.add_argument("module", choices=['questions', 'answers', 'users'],help="type of crawler")
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument("-f","--verbose",action="store_true",help="input keywords file path ")
+	group.add_argument("-l","--quiet",action="store_true",help="input keywords list")
+	parser.add_argument("input", help=" Input filepath or input list")
+	parser.add_argument("-i","--index", type=int, default=0,help="index from which to start scraping ")
+	args=parser.parse_args()
 	
-	if  nb_arguments < 4 or nb_arguments >5:
-		print('Error: Please make sure to provide the correct input parameters: -k or -f, plus keywords list or file ')
-		sys.exit()
-	elif nb_arguments == 5:
-		list_index = sys.argv[4]
-		
-	module_name=sys.argv[1].lower()
-	param = sys.argv[2]
-	items=sys.argv[3]
+	# set starting crawl index
+	list_index = args.index
 	
-	# construct the keywords list
-	input_list=read_args(param,items,list_index)
+	# set input list for crawling
+	# if input is filepath
+	keywords_list=[]
+	if args.verbose:	
+		if os.path.isfile(args.input):
+			with  open(args.filepath, mode='r', encoding='utf-8') as keywords_file:
+				keywords_list = keywords_file.readlines()
+		else:
+			print(" Please provide valid file path")
+	# if input is list
+	elif args.quiet:
+		keywords_list = [item.strip() for item in args.input.strip('[]').split(',')]
+	
+	keywords_list=keywords_list[list_index:]
    
-	allowed_modules=['questions','answers','users']   
-	if module_name in allowed_modules:
-		# Define output data save dir
-		save_path = Path(userpaths.get_my_documents()) / "QuoraScraperData" / module_name
-		pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
-		
-		if module_name.strip().lower()=='questions':
-			questions(input_list,save_path)
-		if module_name.strip().lower() == 'answers':
-			answers(input_list,save_path)
-		if module_name.strip().lower() == 'users':
-			users(input_list,save_path)
-	else :
-		print(' Error: Wrong function name, allowed functions are : questions, answers, users ')
-		
+	#create ouptut path
+	module_name=args.module
+	save_path = Path(userpaths.get_my_documents()) / "QuoraScraperData" / module_name
+	pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
+	
+	# launch scraper
+	if module_name.strip()=='questions':
+		questions(keywords_list,save_path)
+	elif module_name.strip() == 'answers':
+		answers(keywords_list,save_path)
+	elif module_name.strip() == 'users':
+		users(keywords_list,save_path)
+	
 	end_time = datetime.now()
 	print(' Crawling tooks a total time of  : ',end_time-start_time)
 
