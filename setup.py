@@ -25,7 +25,8 @@ setup(
 			'selenium',
 			'bs4',
 			'webdriver-manager',
-			'dateparser'
+			'dateparser',
+			'userpaths'
       ],
   entry_points={
 	"console_scripts": [
