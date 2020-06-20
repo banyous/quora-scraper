@@ -91,7 +91,7 @@ Scraping Users profile can be done as follows:
 ### Notes
 a) Input files must be line separated.
 
-b) Output files fields are tab separated
+b) Output files fields are tab separated.
 
 c) You can add a list/line index parameter In order to start the scraping from that index. The code below will start scraping from "physics" keyword:
     ```sh
