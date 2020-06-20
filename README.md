@@ -101,8 +101,8 @@ c) Quora-scraper is a command-line application written in Python that scrapes Qu
 d) For more help use : 
  ```sh
     $ quora-scraper --help
-    ```
-    
+ ```
+     
     
 License
 ----
