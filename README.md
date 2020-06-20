@@ -88,7 +88,7 @@ Scraping Users profile can be done as follows:
     $ quora-scraper users -f quora_username_file.txt
     ```
 
-### Note 
+### Notes
 a) Please note that output file fields are tab separated.
 
 b) You can add a list/line index parameter In order to start the scraping from that index. The code below will start scraping from "physics" keyword:

@@ -27,7 +27,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 # -------------------------------------------------------------
 def connectchrome():
 	options = Options()
-	# if you want to hide/show browser window, comment/uncomment line below
 	options.add_argument('--headless')
 	options.add_argument('log-level=3')
 	options.add_argument("--incognito")
