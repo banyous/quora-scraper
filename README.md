@@ -89,16 +89,18 @@ Scraping Users profile can be done as follows:
     ```
 
 ### Notes
-a) Please note that output file fields are tab separated.
+a) Input files must be line separated.
 
-b) You can add a list/line index parameter In order to start the scraping from that index. The code below will start scraping from "physics" keyword:
+b) Output files fields are tab separated
+
+c) You can add a list/line index parameter In order to start the scraping from that index. The code below will start scraping from "physics" keyword:
     ```sh
     $ quora-scraper questions -l [finance,politics,tech,physics,life,sports]  -i 3
     ```
  
-c) Quora-scraper is a command-line application written in Python that scrapes Quora data. It uses  xpaths method to scrap Quora webpage elements. Since Quora HTML Structure is constantly changing, the code may need modification from time to time. Please feel free to update and contribute to the source-code in order to keep the scraper up-to-date.
+e) Quora-scraper is a command-line application written in Python that scrapes Quora data. It uses  xpaths method to scrap Quora webpage elements. Since Quora HTML Structure is constantly changing, the code may need modification from time to time. Please feel free to update and contribute to the source-code in order to keep the scraper up-to-date.
 
-d) Please note that Quora website puts limit on the number of questions accessible on the topic page. Thus, even if a topic has a large number of questions (ex: 100k). The number scraped questions links will not exceed 2k or 3k questions.
+g) Quora website puts limit on the number of questions accessible on a topic page. Thus, even if a topic has a large number of questions (ex: 100k), the number scraped questions links will not exceed 2k or 3k questions.
  
 e) For more help use : 
  ```sh
