@@ -98,7 +98,9 @@ b) You can add a list/line index parameter In order to start the scraping from t
  
 c) Quora-scraper is a command-line application written in Python that scrapes Quora data. It uses  xpaths method to scrap Quora webpage elements. Since Quora HTML Structure is constantly changing, the code may need modification from time to time. Please feel free to update and contribute to the source-code in order to keep the scraper up-to-date.
 
-d) For more help use : 
+d) Please note that Quora website puts limit on the number of questions accessible on the topic page. Thus, even if a topic has a large number of questions (ex: 100k). The number scraped questions links will not exceed 2k or 3k questions.
+ 
+e) For more help use : 
  ```sh
     $ quora-scraper --help
  ```
