@@ -307,8 +307,7 @@ def answers(urls_list,save_path):
 	
 # -------------------------------------------------------------
 # -------------------------------------------------------------
-# User profiles crawling function
-
+# Users profile crawler
 def users(users_list,save_path):
 	browser= connectchrome()
 	user_index=-1 
@@ -481,12 +480,13 @@ def users(users_list,save_path):
 	
 # -------------------------------------------------------------
 # -------------------------------------------------------------
-    
 def main():
 	start_time = datetime.now()
+	
 	# Input Folder 
 	input_path = Path(userpaths.get_my_documents()) / "QuoraScraperData" / "input"	
 	pathlib.Path(input_path).mkdir(parents=True, exist_ok=True)
+	
 	# Read arguments
 	parser=argparse.ArgumentParser()
 	parser.add_argument("module", choices=['questions', 'answers', 'users'],help="type of crawler")
@@ -516,6 +516,7 @@ def main():
 			print()
 			print("Reading file error: Please put the file in the program directory: ",Path.cwd() ," or in the QuoraScraperData folder :",input_path ,"  and try again")
 			print()
+	
 	# if input is list
 	elif args.quiet:
 		keywords_list = [item.strip() for item in args.input.strip('[]').split(',')]
