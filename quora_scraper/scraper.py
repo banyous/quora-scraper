@@ -73,7 +73,7 @@ def scrollup_alittle(self,nbtimes):
 		time.sleep(1)
 # -------------------------------------------------------------
 # -------------------------------------------------------------
-# method for loading all Quora answers ( a default Quora Question page shows only 7 Answers)
+# method for loading  quora dynamic content
 def scrolldown(self,type_of_page='users'):
 	last_height = self.page_source
 	loop_scroll=True
@@ -83,7 +83,7 @@ def scrolldown(self,type_of_page='users'):
 	print('scrolling down to get all answers...')
 	max_waiting_time=round(random.uniform(5, 7),1)
 	# we increase waiting time when we look for questions urls	
-	if type_of_page=='questions' : max_waiting_time= round(random.uniform(10, 15),1)
+	if type_of_page=='questions' : max_waiting_time= round(random.uniform(20, 30),1)
 	# scroll down loop until page not changing
 	while loop_scroll:
 		self.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -127,6 +127,7 @@ def questions(topics_list,save_path):
 		try:
 			url = "https://www.quora.com/topic/" + topic_term.strip() + "/all_questions"
 			browser.get(url)
+			time.sleep(2)
 		except Exception as e0:
 			print('topic does not exist in Quora')
 			# print('exception e0')
@@ -172,16 +173,13 @@ def questions(topics_list,save_path):
 			question_set.add(ques)
 
 		# write content of set to Qyestions_URLs/ folder
-		questions_directory = 'Questions_URLs/'
-		pathlib.Path('Questions_URLs').mkdir(parents=True, exist_ok=True)
-		save_path = Path.cwd() / Path("Questions_URLs")
-		save_file= save_path /  str(topic_term.strip('\n') + '_question_urls.txt')
+		save_file= Path(save_path) /  str(topic_term.strip('\n') + '_question_urls.txt')
 		file_question_urls = open(save_file, mode='w', encoding='utf-8')
-		writer = csv.writer(file_question_urls)
 		for ques in question_set:
 			link_url = "http://www.quora.com" + ques.attrs['href']
-			#print(link_url)
-			writer.writerows([[link_url]])
+			file_question_urls.write(link_url+'\n')
+		file_question_urls.close()
+		
 		# sleep every while in order to not get banned
 		if topic_index % 5 == 4:
 			sleep_time = (round(random.uniform(5, 10), 1))
@@ -196,6 +194,8 @@ def answers(urls_list,save_path):
 	browser= connectchrome()
 	url_index = -1
 	loop_limit= len(urls_list)
+	# output file containing all answers
+	file_answers = open(Path(save_path) / "answers.txt", mode='a') 
 	print('Starting the answers crawling...')
 	while True:
 		url_index += 1
@@ -203,8 +203,9 @@ def answers(urls_list,save_path):
 		if url_index >= loop_limit:
 			print('Crawling completed, answers have been saved to  :  ', save_path)
 			browser.quit()
+			file_answers.close()
 			break
-		current_line = urls_list[k]
+		current_line = urls_list[url_index]
 		print('processing question number  : '+ str(url_index+1))
 		print(current_line)
 		if '/unanswered/' in str(current_line):
@@ -214,6 +215,7 @@ def answers(urls_list,save_path):
 		# opening Question page
 		try:
 			browser.get(current_line)
+			time.sleep(2)
 		except Exception as OpenEx:
 			print('cant open the following question link : ',current_line)
 			#print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(OpenEx).__name__, OpenEx)
@@ -222,8 +224,10 @@ def answers(urls_list,save_path):
 		try:
 			nb_answers_text = WebDriverWait(browser, 5).until(
 			EC.visibility_of_element_located((By.XPATH, "//div[@class='QuestionPageAnswerHeader']//div[@class='answer_count']"))).text
-		except:
+		except Exception as Openans: 
 			print('cant get answers')
+			#print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(Openans).__name__, Openans)
+			#print(str(Openans))
 			continue
 		#nb_answers_text = browser.find_element_by_xpath("//div[@class='QuestionPageAnswerHeader']//div[@class='answer_count']").text
 		nb_answers=[int(s.strip('+')) for s in nb_answers_text.split() if s.strip('+').isdigit()][0]
@@ -248,7 +252,7 @@ def answers(urls_list,save_path):
 		# find question's topics
 		questions_topics= soup.findAll("span", {"class": "TopicName"})
 		questions_topics_text=[]
-		for topic in questions_topics : questions_topics_text.append(topic.text)
+		for topic in questions_topics : questions_topics_text.append(topic.text.rstrip())
 		# number of answers
 		# not all answers are saved!
 		# answers that collapsed, and those written by annonymous users are not saved
@@ -287,21 +291,19 @@ def answers(urls_list,save_path):
 				# print(" answer_text", answer_text)
 				answer_text = answer_text.text
 				#write answer elements to file
-				s=  str(question_id) +'\t' + str(date) + "\t"+ user_id + "\t"+ str(questions_topics_text) + "\t" +	str(answer_text)  + "\n"
+				s=  str(question_id.rstrip()) +'\t' + str(date) + "\t"+ user_id + "\t"+ str(questions_topics_text) + "\t" +	str(answer_text.rstrip())  + "\n"
 				#print("wrting down the answer...")
 				file_answers.write(s)
 			except Exception as e1: # Most times because user is anonymous ,  continue without saving anything
-			   # print('---------------There is an Exception-----------')
+				#print('---------------There is an Exception-----------')
 				#print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e1).__name__, e1)
 				#print(str(e1))
 				o=1
-
+		
 		# we sleep every while in order to avoid IP ban
 		if url_index%5==4:
 			sleep_time=(round(random.uniform(5, 10),1))
 			time.sleep(sleep_time)
-
-	print('answers saved to : ',answers_file)
 	browser.quit()
 	
 # -------------------------------------------------------------
@@ -468,13 +470,14 @@ def users(users_list,save_path):
 			for ind in range(0,int(nbanswers)):
 				try:
 					#print(ind)
-					file_user_profile.write(questions_date[ind] +'\t' + questions_link[ind] + '\t' + answersText[ind] + '\n')
+					file_user_profile.write(questions_date[ind] +'\t' + questions_link[ind].rstrip()	 + '\t' + answersText[ind].rstrip() + '\n')
 				except Exception as ew:
 					# print(ew)
 					# print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(ew).__name__, ew)
 					print('could not write to file...')
 					continue
 		file_user_profile.close()
+		
 	browser.quit()
 	
 # -------------------------------------------------------------
@@ -482,6 +485,10 @@ def users(users_list,save_path):
     
 def main():
 	start_time = datetime.now()
+	# Input Folder 
+	input_path = Path(userpaths.get_my_documents()) / "QuoraScraperData" / "input"	
+	pathlib.Path(input_path).mkdir(parents=True, exist_ok=True)
+	# Read arguments
 	parser=argparse.ArgumentParser()
 	parser.add_argument("module", choices=['questions', 'answers', 'users'],help="type of crawler")
 	group = parser.add_mutually_exclusive_group()
@@ -498,18 +505,25 @@ def main():
 	# if input is filepath
 	keywords_list=[]
 	if args.verbose:	
-		if os.path.isfile(args.input):
-			with  open(args.filepath, mode='r', encoding='utf-8') as keywords_file:
+		filename=args.input
+		print("Input file is : ", filename)
+		if os.path.isfile(filename):
+			with  open(filename, mode='r', encoding='utf-8') as keywords_file:
+				keywords_list = keywords_file.readlines()
+		elif os.path.isfile(Path(input_path) / filename):
+			with  open(Path(input_path) / filename, mode='r', encoding='utf-8') as keywords_file:
 				keywords_list = keywords_file.readlines()
 		else:
-			print(" Please provide valid file path")
+			print()
+			print("Reading file error: Please put the file in the program directory: ",Path.cwd() ," or in the QuoraScraperData folder :",input_path ,"  and try again")
+			print()
 	# if input is list
 	elif args.quiet:
 		keywords_list = [item.strip() for item in args.input.strip('[]').split(',')]
 	
 	keywords_list=keywords_list[list_index:]
    
-	#create ouptut path
+	#create ouptut folder
 	module_name=args.module
 	save_path = Path(userpaths.get_my_documents()) / "QuoraScraperData" / module_name
 	pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
