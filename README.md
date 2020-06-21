@@ -22,6 +22,11 @@ To update quora-scraper:
 $ pip install quora-scraper --upgrade
 ```
 
+Alternatively, you can clone the project and run the following command to install: Make sure you cd into the quora-scraper folder before performing the command below.
+
+```sh
+$  python setup.py install
+```
 
 ## Usage
 
@@ -104,7 +109,7 @@ e) For more help use :
  ```
 f) Quora-scraper uses  xpaths and bs4 methods to scrap Quora webpage elements. Since Quora HTML Structure is constantly changing, the code may need modification from time to time. Please feel free to update and contribute to the source-code in order to keep the scraper up-to-date.
      
-    
+  
 License
 ----
 
