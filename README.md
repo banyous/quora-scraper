@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://github.com/banyous/Quora-and-Twitter-crawler-and-user-matcher)
 
-Quora-scraper is a command-line application written in Python that scrapes Quora data. It simulates a browser environment to let you scrape Quora rich textual data. You can use one of the three scraping modules to: Find questions that discuss about certain topics (such as Finance, Politics, Tesla or Donald-Trump). Scrape Quora answers related to certain question(s), or scrape users profile.
+Quora-scraper is a command-line application written in Python that scrapes Quora data. It simulates a browser environment to let you scrape Quora rich textual data. You can use one of the three scraping modules to: Find questions that discuss about certain topics (such as Finance, Politics, Tesla or Donald-Trump). Scrape Quora answers related to certain questions, or scrape users profile. Please use it responsibly ! 
 
 ## Install
 To use our scraper, please follow the steps below:
@@ -55,7 +55,7 @@ Quora answers are scraped using ```answers``` command. This module takes as an i
 
 Quest-ID | AnswerDate | AnswerAuthor-ID | Quest-tags | Answer-Text 
 
-To scrap answers, use one of the following methods:
+To scrape answers, use one of the following methods:
 
 - a) Use -l parameter + question URLs list. 
 
@@ -107,7 +107,7 @@ e) For more help use :
  ```sh
     $ quora-scraper --help
  ```
-f) Quora-scraper uses  xpaths and bs4 methods to scrap Quora webpage elements. Since Quora HTML Structure is constantly changing, the code may need modification from time to time. Please feel free to update and contribute to the source-code in order to keep the scraper up-to-date.
+f) Quora-scraper uses  xpaths and bs4 methods to scrape Quora webpage elements. Since Quora HTML Structure is constantly changing, the code may need modification from time to time. Please feel free to update and contribute to the source-code in order to keep the scraper up-to-date.
      
   
 License
