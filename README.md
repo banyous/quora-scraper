@@ -1,8 +1,8 @@
 # Quora-scraper
 
-[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://github.com/banyous/Quora-and-Twitter-crawler-and-user-matcher)
+[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://github.com/banyous/quora-scraper)
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://github.com/banyous/Quora-and-Twitter-crawler-and-user-matcher)
+[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)https://github.com/banyous)
 
 Quora-scraper is a command-line application written in Python that scrapes Quora data. It simulates a browser environment to let you scrape Quora rich textual data. You can use one of the three scraping modules to: Find questions that discuss about certain topics (such as Finance, Politics, Tesla or Donald-Trump). Scrape Quora answers related to certain questions, or scrape users profile. Please use it responsibly ! 
 
