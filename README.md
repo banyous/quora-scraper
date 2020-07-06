@@ -100,6 +100,7 @@ c) You can add a list/line index parameter In order to start the scraping from t
     ```sh
     $ quora-scraper questions -l [finance,politics,tech,physics,life,sports]  -i 3
     ```
+
 d) Quora website puts limit on the number of questions accessible on a topic page. Thus, even if a topic has a large number of questions (ex: 100k), the number scraped questions links will not exceed 2k or 3k questions.
  
 e) For more help use : 
