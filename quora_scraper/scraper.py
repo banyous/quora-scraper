@@ -31,8 +31,14 @@ def connectchrome():
 	options.add_argument('log-level=3')
 	options.add_argument("--incognito")
 	options.add_argument("--no-sandbox");
-	options.add_argument("--disable-dev-shm-usage");
-	driver_path= Path.cwd() / "chromedriver"
+	options.add_argument("--disable-dev-shm-usage");	
+	try:
+		import quora_scraper
+		package_path=str(quora_scraper.__path__).split("'")[1]
+		driver_path= Path(package_path) / "chromedriver"
+	except:
+		driver_path= Path.cwd() / "chromedriver"
+	driver_path= Path(package_path) / "chromedriver"	
 	driver = webdriver.Chrome(executable_path=driver_path, options=options)
 	driver.maximize_window()
 	time.sleep(2)
@@ -221,12 +227,12 @@ def answers(urls_list,save_path):
 			#print(str(OpenEx))
 			continue
 		try:
-			nb_answers_text = WebDriverWait(browser, 5).until(
-			EC.visibility_of_element_located((By.XPATH, "//div[@class='QuestionPageAnswerHeader']//div[@class='answer_count']"))).text
+			nb_answers_text = WebDriverWait(browser, 10).until(
+			EC.visibility_of_element_located((By.XPATH, "//span[contains(text(),'Answer')]"))).text
 		except Exception as Openans: 
 			print('cant get answers')
-			#print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(Openans).__name__, Openans)
-			#print(str(Openans))
+			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(Openans).__name__, Openans)
+			print(str(Openans))
 			continue
 		#nb_answers_text = browser.find_element_by_xpath("//div[@class='QuestionPageAnswerHeader']//div[@class='answer_count']").text
 		nb_answers=[int(s.strip('+')) for s in nb_answers_text.split() if s.strip('+').isdigit()][0]
@@ -256,25 +262,28 @@ def answers(urls_list,save_path):
 		# not all answers are saved!
 		# answers that collapsed, and those written by annonymous users are not saved
 		try:
-			split_html = html_source.split('class="pagedlist_item"')
+			split_html = html_source.split('class="q-box "')
 		except Exception as notexist :#mostly because question is deleted by quora
 			print('question no long exists')
-			#print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist).__name__, notexist)
-			#print(str(notexist))
+			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist).__name__, notexist)
+			print(str(notexist))
 			continue	
 		# The underneath loop will generate len(split_html)/2 exceptions, cause answers in split_html
 		# are eitheir in Odd or Pair positions, so ignore printed exceptions.
+		#print('len split : ',len(split_html))
 		for i in range(1, len(split_html)):
 			try:
 				part = split_html[i]
 				part_soup = BeautifulSoup(part,"html.parser" )
 				#print('===============================================================')
 				#find users names of answers authors
-				authors=  part_soup.find("a", {"class": "u-flex-inline"}, href=True)
+								
+				authors=part_soup.find("a", href=lambda href: href and "/profile/" in href)
 				user_id = authors['href'].rsplit('/', 1)[-1]
 				#print(user_id)
 				# find answer dates
-				answer_date= part_soup.find("a", {"class": "answer_permalink"})
+				
+				answer_date= part_soup.find("a", string=lambda string: string and ("Answered" in string or "Updated" in string))#("a", {"class": "answer_permalink"})
 				try:
 					date=answer_date.text
 					if ("Updated" in date):
@@ -286,17 +295,17 @@ def answers(urls_list,save_path):
 					date=dateparser.parse("7 days ago").strftime("%Y-%m-%d")
 				#print(date)
 				# find answers text
-				answer_text = part_soup.find("div", {"class": "ui_qtext_expanded"})
-				# print(" answer_text", answer_text)
+				answer_text = part_soup.find("div", {"class": "q-relative spacing_log_answer_content"})
+				#print(" answer_text", answer_text.text)
 				answer_text = answer_text.text
 				#write answer elements to file
 				s=  str(question_id.rstrip()) +'\t' + str(date) + "\t"+ user_id + "\t"+ str(questions_topics_text) + "\t" +	str(answer_text.rstrip())  + "\n"
 				#print("wrting down the answer...")
 				file_answers.write(s)
 			except Exception as e1: # Most times because user is anonymous ,  continue without saving anything
-				#print('---------------There is an Exception-----------')
-				#print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e1).__name__, e1)
-				#print(str(e1))
+				print('---------------There is an Exception-----------')
+				print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e1).__name__, e1)
+				print(str(e1))
 				o=1
 		
 		# we sleep every while in order to avoid IP ban
@@ -461,8 +470,8 @@ def users(users_list,save_path):
 				answersText=[' '.join(answer.text.split('\n')[:]).replace('\r', '').replace('\t', '').strip() for answer in answersText]
 			except Exception as eans:
 				print('cant get answers')
-				# print (eans)
-				# print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(eans).__name__, eans)
+				print (eans)
+				print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(eans).__name__, eans)
 				continue
 			# writing down answers ( date+ Question-ID + Answer text)
 			for ind in range(0,int(nbanswers)):
