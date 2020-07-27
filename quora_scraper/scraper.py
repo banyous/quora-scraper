@@ -223,20 +223,21 @@ def answers(urls_list,save_path):
 			time.sleep(2)
 		except Exception as OpenEx:
 			print('cant open the following question link : ',current_line)
-			#print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(OpenEx).__name__, OpenEx)
-			#print(str(OpenEx))
+			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(OpenEx).__name__, OpenEx)
+			print(str(OpenEx))
 			continue
 		try:
 			nb_answers_text = WebDriverWait(browser, 10).until(
 			EC.visibility_of_element_located((By.XPATH, "//span[contains(text(),'Answer')]"))).text
+			nb_answers=[int(s.strip('+')) for s in nb_answers_text.split() if s.strip('+').isdigit()][0]
+			print('Question have :', nb_answers_text)
 		except Exception as Openans: 
 			print('cant get answers')
 			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(Openans).__name__, Openans)
 			print(str(Openans))
 			continue
 		#nb_answers_text = browser.find_element_by_xpath("//div[@class='QuestionPageAnswerHeader']//div[@class='answer_count']").text
-		nb_answers=[int(s.strip('+')) for s in nb_answers_text.split() if s.strip('+').isdigit()][0]
-		print('Question have :', nb_answers_text)
+		
 		if nb_answers>7:
 			scrolldown(browser,'answers')
 		continue_reading_buttons = browser.find_elements_by_xpath("//a[@role='button']")
@@ -246,6 +247,7 @@ def answers(urls_list,save_path):
 				ActionChains(browser).click(button).perform()
 				time.sleep(1)
 			except:
+				print('cant click more')
 				continue
 		time.sleep(2)
 		html_source = browser.page_source
@@ -255,14 +257,14 @@ def answers(urls_list,save_path):
 		# find title 
 		title= current_line.replace("https://www.quora.com/","")
 		# find question's topics
-		questions_topics= soup.findAll("span", {"class": "TopicName"})
+		questions_topics= soup.findAll("div", {"class": "q-box qu-mr--tiny qu-mb--tiny"})
 		questions_topics_text=[]
 		for topic in questions_topics : questions_topics_text.append(topic.text.rstrip())
 		# number of answers
 		# not all answers are saved!
 		# answers that collapsed, and those written by annonymous users are not saved
 		try:
-			split_html = html_source.split('class="q-box "')
+			split_html = html_source.split('class="q-box qu-pt--medium qu-pb--medium"')
 		except Exception as notexist :#mostly because question is deleted by quora
 			print('question no long exists')
 			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist).__name__, notexist)
@@ -270,17 +272,23 @@ def answers(urls_list,save_path):
 			continue	
 		# The underneath loop will generate len(split_html)/2 exceptions, cause answers in split_html
 		# are eitheir in Odd or Pair positions, so ignore printed exceptions.
-		#print('len split : ',len(split_html))
+		print('len split : ',len(split_html))
 		for i in range(1, len(split_html)):
 			try:
 				part = split_html[i]
 				part_soup = BeautifulSoup(part,"html.parser" )
 				#print('===============================================================')
 				#find users names of answers authors
-								
-				authors=part_soup.find("a", href=lambda href: href and "/profile/" in href)
-				user_id = authors['href'].rsplit('/', 1)[-1]
-				#print(user_id)
+				try:				
+					authors=part_soup.find("a", href=lambda href: href and "/profile/" in href)
+					user_id = authors['href'].rsplit('/', 1)[-1]
+					#print(user_id)
+				except Exception as notexist2 :#mostly because question is deleted by quora
+					print('author extract pb')
+					print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist2).__name__, notexist2)
+					print(str(notexist2))
+					continue
+					
 				# find answer dates
 				
 				answer_date= part_soup.find("a", string=lambda string: string and ("Answered" in string or "Updated" in string))#("a", {"class": "answer_permalink"})
@@ -302,6 +310,7 @@ def answers(urls_list,save_path):
 				s=  str(question_id.rstrip()) +'\t' + str(date) + "\t"+ user_id + "\t"+ str(questions_topics_text) + "\t" +	str(answer_text.rstrip())  + "\n"
 				#print("wrting down the answer...")
 				file_answers.write(s)
+				print('writing down answers...')
 			except Exception as e1: # Most times because user is anonymous ,  continue without saving anything
 				print('---------------There is an Exception-----------')
 				print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e1).__name__, e1)
@@ -309,7 +318,7 @@ def answers(urls_list,save_path):
 				o=1
 		
 		# we sleep every while in order to avoid IP ban
-		if url_index%5==4:
+		if url_index%3==2:
 			sleep_time=(round(random.uniform(5, 10),1))
 			time.sleep(sleep_time)
 	browser.quit()
@@ -408,15 +417,15 @@ def users(users_list,save_path):
 			html_source = browser.page_source
 			source_soup = BeautifulSoup(html_source,"html.parser")
 			# Find user social attributes : #answers, #questions, #shares, #posts, #blogs, #followers, #following, #topics, #edits
-			nbanswers=browser.find_element_by_xpath("//div[contains(@class,'q-text qu-medium') and text()[contains(.,'Answer')]]")
+			nbanswers=browser.find_element_by_xpath("//span[text()[contains(.,'Answers')]]/parent::*")
 			nbanswers=nbanswers.text.strip('Answers').strip().replace(',','')
-			nbquestions =browser.find_element_by_xpath("//div[contains(@class,'q-text qu-medium') and text()[contains(.,'Question')]]")
+			nbquestions =browser.find_element_by_xpath("//span[text()[contains(.,'Questions')]]/parent::*")
 			nbquestions=nbquestions.text.strip('Questions').strip().replace(',','')
 			#print("questions ",nbquestions)
-			nbfollowers= browser.find_element_by_xpath("//div[contains(@class,'q-text qu-medium') and text()[contains(.,'Follower')]]")
+			nbfollowers= browser.find_element_by_xpath("//span[text()[contains(.,'Followers')]]/parent::*")
 			nbfollowers=nbfollowers.text.strip('Followers').strip().replace(',','')
 			#print("followers ",nbfollowers)
-			nbfollowing= browser.find_element_by_xpath("//div[contains(@class,'q-text qu-medium') and text()[contains(.,'Following')]]")
+			nbfollowing= browser.find_element_by_xpath("//span[text()[contains(.,'Following')]]/parent::*")
 			nbfollowing = nbfollowing.text.strip('Following').strip().replace(',','')
 			#print("following ",nbfollowing)
 		except Exception as ea:
