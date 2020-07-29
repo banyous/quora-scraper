@@ -10,7 +10,7 @@ def readme():
 setup(
   name = 'quora-scraper',
   packages = ['quora_scraper'],
-  version = '1.1.0',
+  version = '1.1.3',
   license='MIT',
   description = "Python based code to scrap and download data from quora website: questions related to certain topics, answers given on certain questions and users profile data",
   long_description=readme(),

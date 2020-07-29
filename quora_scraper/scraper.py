@@ -228,7 +228,7 @@ def answers(urls_list,save_path):
 			continue
 		try:
 			nb_answers_text = WebDriverWait(browser, 10).until(
-			EC.visibility_of_element_located((By.XPATH, "//span[contains(text(),'Answer')]"))).text
+			EC.visibility_of_element_located((By.XPATH, "//div[text()[contains(.,'Answer')]]"))).text
 			nb_answers=[int(s.strip('+')) for s in nb_answers_text.split() if s.strip('+').isdigit()][0]
 			print('Question have :', nb_answers_text)
 		except Exception as Openans: 
@@ -272,7 +272,7 @@ def answers(urls_list,save_path):
 			continue	
 		# The underneath loop will generate len(split_html)/2 exceptions, cause answers in split_html
 		# are eitheir in Odd or Pair positions, so ignore printed exceptions.
-		print('len split : ',len(split_html))
+		#print('len split : ',len(split_html))
 		for i in range(1, len(split_html)):
 			try:
 				part = split_html[i]
