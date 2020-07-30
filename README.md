@@ -9,7 +9,6 @@ Quora-scraper is a command-line application written in Python that scrapes Quora
 To use our scraper, please follow the steps below:
 - Install python 3.6 or upper versions.
 - Install the latest version of google-chrome.
-- Download chromedriver and add it to your sys path:  https://sites.google.com/a/chromium.org/chromedriver/home 
 - Install quora-scraper:
 
 ```sh
