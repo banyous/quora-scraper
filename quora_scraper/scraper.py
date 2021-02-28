@@ -256,27 +256,27 @@ def users(users_list,save_path):
 			# print('scrolling down for answers collect')
 			scrolldown(browser)
 		if int(nbanswers)>0:
-			def click_on_all(selector):
+			def click_on_all(find, selector):
 				while True:
-					more_button = browser.find_elements_by_xpath(selector)
-					if not more_button:
+					buttons = find(selector)
+					if not buttons:
 						break
-					for jk in range(0, len(more_button)):
-						ActionChains(browser).move_to_element(more_button[jk]).click(more_button[jk]).perform()
+					for button in range(0, len(buttons)):
+						ActionChains(browser).move_to_element(buttons[button]).click(buttons[button]).perform()
 						time.sleep(1)
 
 			# click on more to see comments section
-			click_on_all("//div[contains(text(), '(more)')]")
+			click_on_all(browser.find_elements_by_xpath, "//div[contains(text(), '(more)')]")
 			# click on all 'View More Comments'
-			click_on_all("//div[text()[contains(., 'View More Comments')]]")
+			click_on_all(browser.find_elements_by_xpath, "//div[text()[contains(., 'View More Comments')]]")
 			# click on all 'View More Replies'
-			click_on_all("//div[text()[contains(., 'View More Replies')]]")
+			click_on_all(browser.find_elements_by_xpath, "//div[text()[contains(., 'View More Replies')]]")
 			# click on all 'View More Replies'
-			click_on_all("//div[text()[contains(., 'View Collapsed Comments')]]")
+			click_on_all(browser.find_elements_by_xpath, "//div[text()[contains(., 'View Collapsed Comments')]]")
 			# expand all hidden comments
-			click_on_all(".qu-tapHighlight--white .qu-pb--tiny")
+			click_on_all(browser.find_elements_by_css_selector, ".qu-tapHighlight--white .qu-pb--tiny")
 			# click on (more) in the comments
-			click_on_all("//span[contains(text(), '(more)')]")
+			click_on_all(browser.find_elements_by_xpath, "//span[contains(text(), '(more)')]")
 			# get answers text (we click on (more) button of each answer)
 			# Find and click on all (more)  to load full text of answers
 			# more_button = browser.find_elements_by_xpath("//div[contains(text(), '(more)')]")
