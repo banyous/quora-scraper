@@ -27,11 +27,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 # -------------------------------------------------------------
 def connectchrome():
 	options = Options()
-	options.add_argument('--headless')
+	# options.add_argument('--headless')
 	options.add_argument('log-level=3')
 	options.add_argument("--incognito")
-	options.add_argument("--no-sandbox");
-	options.add_argument("--disable-dev-shm-usage");	
+	options.add_argument("--no-sandbox")
+	options.add_argument("--disable-dev-shm-usage")
 	try:
 		import quora_scraper
 		package_path=str(quora_scraper.__path__).split("'")[1]
@@ -74,7 +74,7 @@ def convertDateFormat(dateText):
 def scrollup_alittle(self,nbtimes):
 	
 	for iii in range(0,nbtimes):
-		self.execute_script("window.scrollBy(0,-200)")
+		self.execute_script("window.scrollBy(0,-400)")
 		time.sleep(1)
 # -------------------------------------------------------------
 # -------------------------------------------------------------
@@ -111,224 +111,21 @@ def scrolldown(self,type_of_page='users'):
 # -------------------------------------------------------------
 # -------------------------------------------------------------	
 # questions urls crawler 
-def questions(topics_list,save_path):
-	browser=connectchrome()
-	topic_index=-1
-	loop_limit=len(topics_list)
-	print('Starting the questions crawling')
-	while True:
-		print('--------------------------------------------------')
-		topic_index += 1
-		if topic_index>=loop_limit:
-			print('Crawling completed, questions have been saved to  :  ', save_path)
-			browser.quit()
-			break
-		topic_term = topics_list[topic_index].strip()
-		# we remove hashtags (optional)
-		topic_term.replace("#",'')
-		# Looking if the topic has an existing Quora url
-		print('#########################################################')
-		print('Looking for topic number : ',topic_index,' | ', topic_term)
-		try:
-			url = "https://www.quora.com/topic/" + topic_term.strip() + "/all_questions"
-			browser.get(url)
-			time.sleep(2)
-		except Exception as e0:
-			print('topic does not exist in Quora')
-			# print('exception e0')
-			# print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e0).__name__, e0)
-			continue
-
-		# get browser source
-		html_source = browser.page_source
-		question_count_soup = BeautifulSoup(html_source, 'html.parser')
-
-		#  get total number of questions
-		question_count_str = question_count_soup.find('a', attrs={'class': 'TopicQuestionsStatsRow'})
-		if str(question_count_str) =='None':
-			print('topic does not have questions...')
-			continue
-		question_count = convertnumber(question_count_str.contents[0].text)
-		question_count_str = question_count_soup.find('a', attrs={'class': 'TopicQuestionsStatsRow'})
-		if question_count ==0:
-			print('topic does not have questions...')
-			continue
-		print('number of questions for this topic : '+ str(question_count))
-
-		# Get scroll height
-		last_height = browser.execute_script("return document.body.scrollHeight")
-
-		# infinite while loop, break it when you reach the end of the page or not able to scroll further.
-		# Note that Quora
-		# if there is more than 10 questions, we need to scroll down the profile to load remaining questions
-		if int(question_count)>10: 
-			scrolldown(browser,'questions')
-
-		# next we harvest all questions URLs that exists in the Quora topic's page
-		# get html page source
-		html_source = browser.page_source
-		soup = BeautifulSoup(html_source, 'html.parser')
-
-		# question_link is the class for questions
-		question_link = soup.find_all('a', attrs={'class': 'question_link'}, href=True)
-
-		# add questions to a set for uniqueness
-		question_set = set()
-		for ques in question_link:
-			question_set.add(ques)
-
-		# write content of set to Qyestions_URLs/ folder
-		save_file= Path(save_path) /  str(topic_term.strip('\n') + '_question_urls.txt')
-		file_question_urls = open(save_file, mode='w', encoding='utf-8')
-		for ques in question_set:
-			link_url = "http://www.quora.com" + ques.attrs['href']
-			file_question_urls.write(link_url+'\n')
-		file_question_urls.close()
-		
-		# sleep every while in order to not get banned
-		if topic_index % 5 == 4:
-			sleep_time = (round(random.uniform(5, 10), 1))
-			time.sleep(sleep_time)
-
-	browser.quit()   
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------
 # answers cralwer
-def answers(urls_list,save_path):
-	browser= connectchrome()
-	url_index = -1
-	loop_limit= len(urls_list)
-	# output file containing all answers
-	file_answers = open(Path(save_path) / "answers.txt", mode='a') 
-	print('Starting the answers crawling...')
-	while True:
-		url_index += 1
-		print('--------------------------------------------------')
-		if url_index >= loop_limit:
-			print('Crawling completed, answers have been saved to  :  ', save_path)
-			browser.quit()
-			file_answers.close()
-			break
-		current_line = urls_list[url_index]
-		print('processing question number  : '+ str(url_index+1))
-		print(current_line)
-		if '/unanswered/' in str(current_line):
-			print('answer is unanswered')
-			continue
-		question_id = current_line
-		# opening Question page
-		try:
-			browser.get(current_line)
-			time.sleep(2)
-		except Exception as OpenEx:
-			print('cant open the following question link : ',current_line)
-			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(OpenEx).__name__, OpenEx)
-			print(str(OpenEx))
-			continue
-		try:
-			nb_answers_text = WebDriverWait(browser, 10).until(
-			EC.visibility_of_element_located((By.XPATH, "//div[text()[contains(.,'Answer')]]"))).text
-			nb_answers=[int(s.strip('+')) for s in nb_answers_text.split() if s.strip('+').isdigit()][0]
-			print('Question have :', nb_answers_text)
-		except Exception as Openans: 
-			print('cant get answers')
-			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(Openans).__name__, Openans)
-			print(str(Openans))
-			continue
-		#nb_answers_text = browser.find_element_by_xpath("//div[@class='QuestionPageAnswerHeader']//div[@class='answer_count']").text
-		
-		if nb_answers>7:
-			scrolldown(browser,'answers')
-		continue_reading_buttons = browser.find_elements_by_xpath("//a[@role='button']")
-		time.sleep(2)
-		for button in continue_reading_buttons:
-			try:
-				ActionChains(browser).click(button).perform()
-				time.sleep(1)
-			except:
-				print('cant click more')
-				continue
-		time.sleep(2)
-		html_source = browser.page_source
-		soup = BeautifulSoup(html_source,"html.parser")
-		# get the question-id
-		question_id = current_line.rsplit('/', 1)[-1]
-		# find title 
-		title= current_line.replace("https://www.quora.com/","")
-		# find question's topics
-		questions_topics= soup.findAll("div", {"class": "q-box qu-mr--tiny qu-mb--tiny"})
-		questions_topics_text=[]
-		for topic in questions_topics : questions_topics_text.append(topic.text.rstrip())
-		# number of answers
-		# not all answers are saved!
-		# answers that collapsed, and those written by annonymous users are not saved
-		try:
-			split_html = html_source.split('class="q-box qu-pt--medium qu-pb--medium"')
-		except Exception as notexist :#mostly because question is deleted by quora
-			print('question no long exists')
-			print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist).__name__, notexist)
-			print(str(notexist))
-			continue	
-		# The underneath loop will generate len(split_html)/2 exceptions, cause answers in split_html
-		# are eitheir in Odd or Pair positions, so ignore printed exceptions.
-		#print('len split : ',len(split_html))
-		for i in range(1, len(split_html)):
-			try:
-				part = split_html[i]
-				part_soup = BeautifulSoup(part,"html.parser" )
-				#print('===============================================================')
-				#find users names of answers authors
-				try:				
-					authors=part_soup.find("a", href=lambda href: href and "/profile/" in href)
-					user_id = authors['href'].rsplit('/', 1)[-1]
-					#print(user_id)
-				except Exception as notexist2 :#mostly because question is deleted by quora
-					print('author extract pb')
-					print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist2).__name__, notexist2)
-					print(str(notexist2))
-					continue
-					
-				# find answer dates
-				
-				answer_date= part_soup.find("a", string=lambda string: string and ("Answered" in string or "Updated" in string))#("a", {"class": "answer_permalink"})
-				try:
-					date=answer_date.text
-					if ("Updated" in date):
-					   date= date[8:]
-					else:
-					   date= date[9:]
-					date=dateparser.parse(date).strftime("%Y-%m-%d")
-				except: # when updated or answered in the same week (ex: Updated Sat)
-					date=dateparser.parse("7 days ago").strftime("%Y-%m-%d")
-				#print(date)
-				# find answers text
-				answer_text = part_soup.find("div", {"class": "q-relative spacing_log_answer_content"})
-				#print(" answer_text", answer_text.text)
-				answer_text = answer_text.text
-				#write answer elements to file
-				s=  str(question_id.rstrip()) +'\t' + str(date) + "\t"+ user_id + "\t"+ str(questions_topics_text) + "\t" +	str(answer_text.rstrip())  + "\n"
-				#print("wrting down the answer...")
-				file_answers.write(s)
-				print('writing down answers...')
-			except Exception as e1: # Most times because user is anonymous ,  continue without saving anything
-				print('---------------There is an Exception-----------')
-				print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e1).__name__, e1)
-				print(str(e1))
-				o=1
-		
-		# we sleep every while in order to avoid IP ban
-		if url_index%3==2:
-			sleep_time=(round(random.uniform(5, 10),1))
-			time.sleep(sleep_time)
-	browser.quit()
-	
+
 # -------------------------------------------------------------
 # -------------------------------------------------------------
 # Users profile crawler
 def users(users_list,save_path):
 	browser= connectchrome()
-	user_index=-1 
+
+	browser.maximize_window()
+	browser.set_window_position(70, 0, windowHandle ='current')
+
+	user_index=-1
 	loop_limit=len(users_list)
 	print('Starting the users crawling...')
 	while True:
@@ -366,16 +163,16 @@ def users(users_list,save_path):
 		quora_profile_information['description']=description
 		# get profile bio		
 		try:
-		   more_button = browser.find_elements_by_link_text('(more)')
-		   ActionChains(browser).move_to_element(more_button[0]).click(more_button[0]).perform()
-		   time.sleep(0.5)
-		   profile_bio = browser.find_element_by_class_name('ProfileDescriptionPreviewSection')
-		   profile_bio_text=profile_bio.text.replace('\n', ' ')
-		   #print(profile_bio_text)
+			more_button = browser.find_elements_by_link_text('(more)')
+			ActionChains(browser).move_to_element(more_button[0]).click(more_button[0]).perform()
+			time.sleep(0.5)
+			profile_bio = browser.find_element_by_class_name('ProfileDescriptionPreviewSection')
+			profile_bio_text=profile_bio.text.replace('\n', ' ')
+			#print(profile_bio_text)
 		except Exception as e:
-		   #print('no profile bio')
-		   #print(e)
-		   profile_bio_text=''
+			#print('no profile bio')
+			#print(e)
+			profile_bio_text=''
 		quora_profile_information['profile_bio']=profile_bio_text
 		html_source = browser.page_source
 		source_soup = BeautifulSoup(html_source,"html.parser")
@@ -417,15 +214,19 @@ def users(users_list,save_path):
 			html_source = browser.page_source
 			source_soup = BeautifulSoup(html_source,"html.parser")
 			# Find user social attributes : #answers, #questions, #shares, #posts, #blogs, #followers, #following, #topics, #edits
-			nbanswers=browser.find_element_by_xpath("//span[text()[contains(.,'Answers')]]/parent::*")
+			nbanswers=browser.find_element_by_xpath("//div[text()[contains(.,'Answers')]]")
 			nbanswers=nbanswers.text.strip('Answers').strip().replace(',','')
-			nbquestions =browser.find_element_by_xpath("//span[text()[contains(.,'Questions')]]/parent::*")
+			nbquestions =browser.find_element_by_xpath("//div[text()[contains(.,'Questions')]]")
 			nbquestions=nbquestions.text.strip('Questions').strip().replace(',','')
 			#print("questions ",nbquestions)
-			nbfollowers= browser.find_element_by_xpath("//span[text()[contains(.,'Followers')]]/parent::*")
+			nbfollowers= browser.find_element_by_xpath("//div[text()[contains(.,'Followers')]]")
 			nbfollowers=nbfollowers.text.strip('Followers').strip().replace(',','')
 			#print("followers ",nbfollowers)
-			nbfollowing= browser.find_element_by_xpath("//span[text()[contains(.,'Following')]]/parent::*")
+			# 'More' dropdown
+			more_button= browser.find_element_by_xpath("//div[text()[contains(., 'More')]]/following-sibling::div[contains(@class, 'q-flex')]")
+			if more_button:
+				more_button.click()
+			nbfollowing = browser.find_element_by_xpath("//div[text()[contains(.,'Following')]]")
 			nbfollowing = nbfollowing.text.strip('Following').strip().replace(',','')
 			#print("following ",nbfollowing)
 		except Exception as ea:
@@ -452,17 +253,37 @@ def users(users_list,save_path):
 		# scroll down profile for loading all answers
 		print('user has ', nbanswers,' answers')
 		if int(nbanswers)>9:
+			# print('scrolling down for answers collect')
 			scrolldown(browser)
-		# get answers text (we click on (more) button of each answer)
 		if int(nbanswers)>0:
-			#print('scrolling down for answers collect')
-			i=0
+			def click_on_all(selector):
+				while True:
+					more_button = browser.find_elements_by_xpath(selector)
+					if not more_button:
+						break
+					for jk in range(0, len(more_button)):
+						ActionChains(browser).move_to_element(more_button[jk]).click(more_button[jk]).perform()
+						time.sleep(1)
+
+			# click on more to see comments section
+			click_on_all("//div[contains(text(), '(more)')]")
+			# click on all 'View More Comments'
+			click_on_all("//div[text()[contains(., 'View More Comments')]]")
+			# click on all 'View More Replies'
+			click_on_all("//div[text()[contains(., 'View More Replies')]]")
+			# click on all 'View More Replies'
+			click_on_all("//div[text()[contains(., 'View Collapsed Comments')]]")
+			# expand all hidden comments
+			click_on_all(".qu-tapHighlight--white .qu-pb--tiny")
+			# click on (more) in the comments
+			click_on_all("//span[contains(text(), '(more)')]")
+			# get answers text (we click on (more) button of each answer)
 			# Find and click on all (more)  to load full text of answers
-			more_button = browser.find_elements_by_xpath("//div[contains(text(), '(more)')]")
-			#print('nb more buttons',len(more_button))
-			for jk in range(0,len(more_button)):
-				ActionChains(browser).move_to_element(more_button[jk]).click(more_button[jk]).perform()
-				time.sleep(1)
+			# more_button = browser.find_elements_by_xpath("//div[contains(text(), '(more)')]")
+			# #print('nb more buttons',len(more_button))
+			# for jk in range(0,len(more_button)):
+			# 	ActionChains(browser).move_to_element(more_button[jk]).click(more_button[jk]).perform()
+			# 	time.sleep(1)
 			try:
 				questions_and_dates_tags= browser.find_elements_by_xpath("//a[@class='q-box qu-cursor--pointer qu-hover--textDecoration--underline' and contains(@href,'/answer/') and not(contains(@href,'/comment/')) and not(contains(@style,'font-style: normal')) ]")
 				questions_link=[]
@@ -495,7 +316,7 @@ def users(users_list,save_path):
 		file_user_profile.close()
 		
 	browser.quit()
-	
+
 # -------------------------------------------------------------
 # -------------------------------------------------------------
 def main():
@@ -547,12 +368,12 @@ def main():
 	pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
 	
 	# launch scraper
-	if module_name.strip()=='questions':
-		questions(keywords_list,save_path)
-	elif module_name.strip() == 'answers':
-		answers(keywords_list,save_path)
-	elif module_name.strip() == 'users':
-		users(keywords_list,save_path)
+	# if module_name.strip()=='questions':
+	# 	questions(keywords_list,save_path)
+	# elif module_name.strip() == 'answers':
+	# 	answers(keywords_list,save_path)
+	# elif module_name.strip() == 'users':
+	users(keywords_list,save_path)
 	
 	end_time = datetime.now()
 	print(' Crawling tooks a total time of  : ',end_time-start_time)
