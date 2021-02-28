@@ -1,48 +1,30 @@
 # __main__.py
 DEBUG = 1
+import argparse
+import json
 import os
-import re
-import subprocess
+import pathlib
+import random
 import sys
 import time
-import ast
-import csv
-import json
-import pathlib
+from datetime import datetime
 from pathlib import Path
-import random
-import userpaths
-import dateparser
-import argparse
-from datetime import datetime, timedelta
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 
-# -------------------------------------------------------------
-# -------------------------------------------------------------
-def connectchrome():
-	options = Options()
-	# options.add_argument('--headless')
-	options.add_argument('log-level=3')
-	options.add_argument("--incognito")
-	options.add_argument("--no-sandbox")
-	options.add_argument("--disable-dev-shm-usage")
-	try:
-		import quora_scraper
-		package_path=str(quora_scraper.__path__).split("'")[1]
-		driver_path= Path(package_path) / "chromedriver"
-	except:
-		driver_path= Path.cwd() / "chromedriver"
-	driver_path= Path(package_path) / "chromedriver"	
-	driver = webdriver.Chrome(executable_path=driver_path, options=options)
-	driver.maximize_window()
-	time.sleep(2)
-	return driver
+import dateparser
+import userpaths
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.action_chains import ActionChains
+
+from shared import \
+	scrolldown, \
+	show_more_of_articles, \
+	view_more_comments, \
+	view_more_replies, \
+	view_collapsed_comments, \
+	expand_hidden_comments, \
+	show_more_of_comments, \
+	connectchrome
+
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------
@@ -68,53 +50,6 @@ def convertDateFormat(dateText):
 	except:  # when updated or answered in the same week (ex: Updated Sat)
 		date = dateparser.parse("7 days ago").strftime("%Y-%m-%d")
 	return date
-
-# -------------------------------------------------------------
-# -------------------------------------------------------------
-def scrollup_alittle(self,nbtimes):
-	
-	for iii in range(0,nbtimes):
-		self.execute_script("window.scrollBy(0,-400)")
-		time.sleep(1)
-# -------------------------------------------------------------
-# -------------------------------------------------------------
-# method for loading  quora dynamic content
-def scrolldown(self,type_of_page='users'):
-	last_height = self.page_source
-	loop_scroll=True
-	attempt = 0
-	# we generate a random waiting time between 2 and 4
-	waiting_scroll_time=round(random.uniform(2, 4),1)
-	print('scrolling down to get all answers...')
-	max_waiting_time=round(random.uniform(5, 7),1)
-	# we increase waiting time when we look for questions urls	
-	if type_of_page=='questions' : max_waiting_time= round(random.uniform(20, 30),1)
-	# scroll down loop until page not changing
-	while loop_scroll:
-		self.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-		time.sleep(2)
-		if type_of_page=='answers':
-			scrollup_alittle(self,2)
-		new_height=self.page_source
-		if new_height == last_height:
-			# in case of not change, we increase the waiting time
-			waiting_scroll_time= max_waiting_time
-			attempt += 1
-			if attempt==3:# in the third attempt we end the scrolling
-				loop_scroll=False
-			#print('attempt',attempt)
-		else:
-			attempt=0
-			waiting_scroll_time=round(random.uniform(2, 4),1)
-		last_height=new_height
-
-# -------------------------------------------------------------
-# -------------------------------------------------------------	
-# questions urls crawler 
-
-# -------------------------------------------------------------
-# -------------------------------------------------------------
-# answers cralwer
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------
@@ -263,20 +198,15 @@ def users(users_list,save_path):
 						break
 					for button in range(0, len(buttons)):
 						ActionChains(browser).move_to_element(buttons[button]).click(buttons[button]).perform()
-						time.sleep(1)
+						time.sleep(0.5)
 
-			# click on more to see comments section
-			click_on_all(browser.find_elements_by_xpath, "//div[contains(text(), '(more)')]")
-			# click on all 'View More Comments'
-			click_on_all(browser.find_elements_by_xpath, "//div[text()[contains(., 'View More Comments')]]")
-			# click on all 'View More Replies'
-			click_on_all(browser.find_elements_by_xpath, "//div[text()[contains(., 'View More Replies')]]")
-			# click on all 'View More Replies'
-			click_on_all(browser.find_elements_by_xpath, "//div[text()[contains(., 'View Collapsed Comments')]]")
-			# expand all hidden comments
-			click_on_all(browser.find_elements_by_css_selector, ".qu-tapHighlight--white .qu-pb--tiny")
-			# click on (more) in the comments
-			click_on_all(browser.find_elements_by_xpath, "//span[contains(text(), '(more)')]")
+			show_more_of_articles(browser)
+			view_more_comments(browser)
+			view_more_replies(browser)
+			view_collapsed_comments(browser)
+			expand_hidden_comments(browser)
+			show_more_of_comments(browser)
+
 			# get answers text (we click on (more) button of each answer)
 			# Find and click on all (more)  to load full text of answers
 			# more_button = browser.find_elements_by_xpath("//div[contains(text(), '(more)')]")
