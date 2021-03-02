@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 DEBUG = 1
-import random
 import time
 from pathlib import Path
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
+
 
 def connectchrome():
     options = Options()
@@ -28,33 +29,23 @@ def connectchrome():
     time.sleep(2)
     return browser
 
-def scrolldown(self,type_of_page='users'):
+def scrolldown(self):
     print('scrolling down to get all answers...')
     last_height = self.page_source
     loop_scroll=True
     attempt = 0
-    # we generate a random waiting time between 2 and 4
-    waiting_scroll_time=round(random.uniform(2, 4),1)
-    max_waiting_time=round(random.uniform(5, 7),1)
-    # we increase waiting time when we look for questions urls
-    if type_of_page=='questions' : max_waiting_time= round(random.uniform(20, 30),1)
     # scroll down loop until page not changing
     while loop_scroll:
         self.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(2)
-        if type_of_page=='answers':
-            scrollup_alittle(self,2)
         new_height=self.page_source
         if new_height == last_height:
             # in case of not change, we increase the waiting time
-            waiting_scroll_time= max_waiting_time
             attempt += 1
             if attempt==3:# in the third attempt we end the scrolling
                 loop_scroll=False
-        #print('attempt',attempt)
         else:
             attempt=0
-            waiting_scroll_time=round(random.uniform(2, 4),1)
         last_height=new_height
 
 def scrollup_alittle(self,nbtimes):
@@ -63,14 +54,29 @@ def scrollup_alittle(self,nbtimes):
         time.sleep(1)
 
 def click_on_all(browser, find_by, selector):
+    last_nb_buttons = -1
+    last_nb_buttons_repeated = 0
     while True:
         buttons = find_by(selector)
-        if not buttons:
-            break
-        print('processing ', len(buttons), 'instances of ', selector)
-        for button in range(0, len(buttons)):
-            ActionChains(browser).move_to_element(buttons[button]).click(buttons[button]).perform()
+        nb_buttons = len(buttons)
+
+        print('clicking on ', nb_buttons, 'instances of ', '"' + selector + '"')
+        for button in buttons:
+            ActionChains(browser).move_to_element(button).click(button).perform()
             time.sleep(0.5)
+
+        # know when to exit the loop
+        if nb_buttons == 0:
+            break
+        elif nb_buttons == last_nb_buttons:
+            last_nb_buttons_repeated += 1
+            # if we keep seeing the same number of buttons, the buttons are probably broken
+            if last_nb_buttons_repeated == 10:
+                break
+        else:
+            last_nb_buttons = nb_buttons
+            last_nb_buttons_repeated = 0
+
 
 def show_more_of_articles(browser):
     click_on_all(browser, browser.find_elements_by_xpath, "//div[contains(text(), '(more)')]")
@@ -78,14 +84,14 @@ def show_more_of_articles(browser):
 def view_more_comments(browser):
     click_on_all(browser, browser.find_elements_by_xpath, "//div[text()[contains(., 'View More Comments')]]")
 
-def view_more_replies(browser):
-    click_on_all(browser, browser.find_elements_by_xpath, "//div[text()[contains(., 'View More Replies')]]")
-
 def view_collapsed_comments(browser):
     click_on_all(browser, browser.find_elements_by_xpath, "//div[text()[contains(., 'View Collapsed Comments')]]")
 
 def expand_hidden_comments(browser):
     click_on_all(browser, browser.find_elements_by_css_selector, ".qu-tapHighlight--white .qu-pb--tiny")
+
+def view_more_replies(browser):
+    click_on_all(browser, browser.find_elements_by_xpath, "//div[text()[contains(., 'View More Replies')]]")
 
 def show_more_of_comments(browser):
     click_on_all(browser, browser.find_elements_by_xpath, "//span[contains(text(), '(more)')]")
