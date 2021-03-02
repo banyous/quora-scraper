@@ -16,11 +16,12 @@ from shared import \
 
 ###############################################################
 parser=argparse.ArgumentParser()
-parser.add_argument("url", help="The URL you want to visit")
+parser.add_argument("user", help="The user ID you want to visit")
 args=parser.parse_args()
 
-url = args.url
-print("getting URL", url)
+user = args.user
+url = "https://www.quora.com/profile/" + user
+print("getting", url)
 browser = connectchrome()
 browser.get(url)
 time.sleep(2)
