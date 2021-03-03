@@ -60,7 +60,7 @@ def click_on_all(browser, find_by, selector):
         buttons = find_by(selector)
         nb_buttons = len(buttons)
 
-        print('clicking on ', nb_buttons, 'instances of ', '"' + selector + '"')
+        print('clicking on', nb_buttons, 'instances of', '"' + selector + '"')
         for button in buttons:
             ActionChains(browser).move_to_element(button).click(button).perform()
             time.sleep(0.5)
@@ -95,3 +95,6 @@ def view_more_replies(browser):
 
 def show_more_of_comments(browser):
     click_on_all(browser, browser.find_elements_by_xpath, "//span[contains(text(), '(more)')]")
+
+def try_again(browser):
+    click_on_all(browser, browser.find_elements_by_xpath, "//div[text()[contains(., 'Try again')]]")
