@@ -66,7 +66,6 @@ def do_try_again():
 
 def do_all():
     print(do_all.__name__ + "()")
-    do_try_again()
     do_scrolldown()
     do_show_more_of_articles()
     do_view_more_comments()
@@ -74,6 +73,7 @@ def do_all():
     do_expand_hidden_comments()
     do_view_more_replies()
     do_show_more_of_comments()
+    do_try_again()
 
 ###############################################################
 

@@ -42,16 +42,11 @@ def scrolldown(self):
         if new_height == last_height:
             # in case of not change, we increase the waiting time
             attempt += 1
-            if attempt==3:# in the third attempt we end the scrolling
+            if attempt==5:# in the n-th attempt we end the scrolling
                 loop_scroll=False
         else:
             attempt=0
         last_height=new_height
-
-def scrollup_alittle(self,nbtimes):
-    for iii in range(0,nbtimes):
-        self.execute_script("window.scrollBy(0,-400)")
-        time.sleep(1)
 
 def click_on_all(browser, find_by, selector):
     last_nb_buttons = -1
@@ -72,6 +67,7 @@ def click_on_all(browser, find_by, selector):
             last_nb_buttons_repeated += 1
             # if we keep seeing the same number of buttons, the buttons are probably broken
             if last_nb_buttons_repeated == 10:
+                print("aborting. it looks like the remaining buttons may not be responding to clicks.")
                 break
         else:
             last_nb_buttons = nb_buttons
