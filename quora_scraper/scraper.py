@@ -32,14 +32,15 @@ def connectchrome():
 	options.add_argument("--incognito")
 	options.add_argument("--no-sandbox");
 	options.add_argument("--disable-dev-shm-usage");	
-	try:
-		import quora_scraper
-		package_path=str(quora_scraper.__path__).split("'")[1]
-		driver_path= Path(package_path) / "chromedriver"
-	except:
-		driver_path= Path.cwd() / "chromedriver"
-	driver_path= Path(package_path) / "chromedriver"
-	driver = webdriver.Chrome(executable_path=driver_path, options=options)
+	# try:
+	# 	import quora_scraper
+	# 	package_path=str(quora_scraper.__path__).split("'")[1]
+	# 	driver_path= Path(package_path) / "chromedriver"
+	# except:
+	# 	driver_path= Path.cwd() / "chromedriver"
+	# driver_path= Path.cwd() / "chromedriver"
+
+	driver = webdriver.Chrome(options=options)
 	driver.maximize_window()
 	time.sleep(2)
 	return driver
@@ -168,7 +169,6 @@ def questions(topics_list,save_path):
 		soup = BeautifulSoup(html_source, 'html.parser')
 
 		all_htmls = soup.find_all('div', {'class': 'CssComponent-sc-1oskqb9-0 cXjXFI'})
-		print(all_htmls)
 		question_count_after_scroll = len(all_htmls)
 		print(f'number of questions for this topic : {question_count_after_scroll}')
 
