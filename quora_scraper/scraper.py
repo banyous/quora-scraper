@@ -38,7 +38,7 @@ def connectchrome():
 		driver_path= Path(package_path) / "chromedriver"
 	except:
 		driver_path= Path.cwd() / "chromedriver"
-	driver_path= Path(package_path) / "chromedriver"	
+	driver_path= Path(package_path) / "chromedriver"
 	driver = webdriver.Chrome(executable_path=driver_path, options=options)
 	driver.maximize_window()
 	time.sleep(2)
@@ -130,7 +130,7 @@ def questions(topics_list,save_path):
 		print('#########################################################')
 		print('Looking for topic number : ',topic_index,' | ', topic_term)
 		try:
-			url = "https://www.quora.com/topic/" + topic_term.strip() + "/all_questions"
+			url = "https://www.quora.com/topic/" + topic_term.strip()
 			browser.get(url)
 			time.sleep(2)
 		except Exception as e0:
@@ -142,26 +142,24 @@ def questions(topics_list,save_path):
 		# get browser source
 		html_source = browser.page_source
 		question_count_soup = BeautifulSoup(html_source, 'html.parser')
+		all_question_htmls = question_count_soup.find_all('div', {'class': 'CssComponent-sc-1oskqb9-0 cXjXFI'})
 
 		#  get total number of questions
-		question_count_str = question_count_soup.find('a', attrs={'class': 'TopicQuestionsStatsRow'})
-		if str(question_count_str) =='None':
+		question_count = len(all_question_htmls)
+		if question_count is None:
 			print('topic does not have questions...')
 			continue
-		question_count = convertnumber(question_count_str.contents[0].text)
-		question_count_str = question_count_soup.find('a', attrs={'class': 'TopicQuestionsStatsRow'})
-		if question_count ==0:
+		if question_count == 0:
 			print('topic does not have questions...')
 			continue
-		print('number of questions for this topic : '+ str(question_count))
 
 		# Get scroll height
 		last_height = browser.execute_script("return document.body.scrollHeight")
 
 		# infinite while loop, break it when you reach the end of the page or not able to scroll further.
 		# Note that Quora
-		# if there is more than 10 questions, we need to scroll down the profile to load remaining questions
-		if int(question_count)>10: 
+		# if there is only 10 questions, we need to scroll down the profile to load more questions
+		if question_count == 10:
 			scrolldown(browser,'questions')
 
 		# next we harvest all questions URLs that exists in the Quora topic's page
@@ -169,19 +167,25 @@ def questions(topics_list,save_path):
 		html_source = browser.page_source
 		soup = BeautifulSoup(html_source, 'html.parser')
 
-		# question_link is the class for questions
-		question_link = soup.find_all('a', attrs={'class': 'question_link'}, href=True)
+		all_htmls = soup.find_all('div', {'class': 'CssComponent-sc-1oskqb9-0 cXjXFI'})
+		print(all_htmls)
+		question_count_after_scroll = len(all_htmls)
+		print(f'number of questions for this topic : {question_count_after_scroll}')
+
 
 		# add questions to a set for uniqueness
 		question_set = set()
-		for ques in question_link:
-			question_set.add(ques)
+		for html in all_htmls:
+			all_links = html.find_all('a', {'href': True})
+			# in one question we get 3 links and the third link is the question link
+			question_link = all_links[2]
+			question_set.add(question_link)
 
 		# write content of set to Qyestions_URLs/ folder
 		save_file= Path(save_path) /  str(topic_term.strip('\n') + '_question_urls.txt')
 		file_question_urls = open(save_file, mode='w', encoding='utf-8')
 		for ques in question_set:
-			link_url = "http://www.quora.com" + ques.attrs['href']
+			link_url = ques.attrs['href']
 			file_question_urls.write(link_url+'\n')
 		file_question_urls.close()
 		
