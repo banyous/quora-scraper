@@ -1,12 +1,8 @@
 # __main__.py
 DEBUG = 1
 import os
-import re
-import subprocess
 import sys
 import time
-import ast
-import csv
 import json
 import pathlib
 from pathlib import Path
@@ -26,7 +22,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------
-def connectchrome():
+def connect_chrome():
     options = Options()
     options.add_argument('--headless')
     options.add_argument('log-level=3')
@@ -50,7 +46,7 @@ def connectchrome():
 # -------------------------------------------------------------
 # -------------------------------------------------------------
 # remove 'k'(kilo) and 'm'(million) from Quora numbers
-def convertnumber(number):
+def convert_number(number):
     if 'k' in number:
         n = float(number.lower().replace('k', '').replace(' ', '')) * 1000
     elif 'm' in number:
@@ -63,13 +59,13 @@ def convertnumber(number):
 # -------------------------------------------------------------
 # -------------------------------------------------------------
 # convert Quora dates (such as 2 months ago) to DD-MM-YYYY format
-def convertDateFormat(dateText):
+def convert_date_format(date_text):
     try:
-        if ("Updated" in dateText):
-            date = dateText[8:]
+        if "Updated" in date_text:
+            date = date_text[8:]
         else:
-            date = dateText[9:]
-        date = dateparser.parse(dateText).strftime("%Y-%m-%d")
+            date = date_text[9:]
+        date = dateparser.parse(date_text).strftime("%Y-%m-%d")
     except:  # when updated or answered in the same week (ex: Updated Sat)
         date = dateparser.parse("7 days ago").strftime("%Y-%m-%d")
     return date
@@ -77,8 +73,8 @@ def convertDateFormat(dateText):
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------
-def scrollup_alittle(self, nbtimes):
-    for iii in range(0, nbtimes):
+def scroll_up(self, nb_times):
+    for iii in range(0, nb_times):
         self.execute_script("window.scrollBy(0,-200)")
         time.sleep(1)
 
@@ -86,7 +82,7 @@ def scrollup_alittle(self, nbtimes):
 # -------------------------------------------------------------
 # -------------------------------------------------------------
 # method for loading  quora dynamic content
-def scrolldown(self, type_of_page='users'):
+def scroll_down(self, type_of_page='users'):
     last_height = self.page_source
     loop_scroll = True
     attempt = 0
@@ -101,7 +97,7 @@ def scrolldown(self, type_of_page='users'):
         self.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(2)
         if type_of_page == 'answers':
-            scrollup_alittle(self, 2)
+            scroll_up(self, 2)
         new_height = self.page_source
         if new_height == last_height:
             # in case of not change, we increase the waiting time
@@ -120,7 +116,7 @@ def scrolldown(self, type_of_page='users'):
 # -------------------------------------------------------------	
 # questions urls crawler 
 def questions(topics_list, save_path):
-    browser = connectchrome()
+    browser = connect_chrome()
     topic_index = -1
     loop_limit = len(topics_list)
     print('Starting the questions crawling')
@@ -168,7 +164,7 @@ def questions(topics_list, save_path):
         # Note that Quora
         # if there is only 10 questions, we need to scroll down the profile to load more questions
         if question_count == 10:
-            scrolldown(browser, 'questions')
+            scroll_down(browser, 'questions')
 
         # next we harvest all questions URLs that exists in the Quora topic's page
         # get html page source
@@ -208,9 +204,9 @@ def questions(topics_list, save_path):
 
 # -------------------------------------------------------------
 # -------------------------------------------------------------
-# answers cralwer
+# answers crawler
 def answers(urls_list, save_path):
-    browser = connectchrome()
+    browser = connect_chrome()
     url_index = -1
     loop_limit = len(urls_list)
     # output file containing all answers
@@ -253,7 +249,7 @@ def answers(urls_list, save_path):
         # nb_answers_text = browser.find_element_by_xpath("//div[@class='QuestionPageAnswerHeader']//div[@class='answer_count']").text
 
         if nb_answers > 7:
-            scrolldown(browser, 'answers')
+            scroll_down(browser, 'answers')
         continue_reading_buttons = browser.find_elements_by_xpath("//a[@role='button']")
         time.sleep(2)
         for button in continue_reading_buttons:
@@ -273,16 +269,17 @@ def answers(urls_list, save_path):
         # find question's topics
         questions_topics = soup.findAll("div", {"class": "q-box qu-mr--tiny qu-mb--tiny"})
         questions_topics_text = []
-        for topic in questions_topics: questions_topics_text.append(topic.text.rstrip())
+        for topic in questions_topics:
+            questions_topics_text.append(topic.text.rstrip())
         # number of answers
         # not all answers are saved!
         # answers that collapsed, and those written by anonymous users are not saved
         try:
             split_html = html_source.split('class="q-box qu-pt--medium qu-pb--medium"')
-        except Exception as notexist:  # mostly because question is deleted by quora
+        except Exception as not_exist:  # mostly because question is deleted by quora
             print('question no long exists')
-            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist).__name__, notexist)
-            print(str(notexist))
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(not_exist).__name__, not_exist)
+            print(str(not_exist))
             continue
         # The underneath loop will generate len(split_html)/2 exceptions, cause answers in split_html
         # are either in Odd or Pair positions, so ignore printed exceptions.
@@ -297,10 +294,11 @@ def answers(urls_list, save_path):
                     authors = part_soup.find("a", href=lambda href: href and "/profile/" in href)
                     user_id = authors['href'].rsplit('/', 1)[-1]
                 # print(user_id)
-                except Exception as notexist2:  # mostly because question is deleted by quora
+                except Exception as not_exist2:  # mostly because question is deleted by quora
                     print('author extract pb')
-                    print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(notexist2).__name__, notexist2)
-                    print(str(notexist2))
+                    print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(not_exist2).__name__,
+                          not_exist2)
+                    print(str(not_exist2))
                     continue
 
                 # find answer dates
@@ -309,7 +307,7 @@ def answers(urls_list, save_path):
                         "Answered" in string or "Updated" in string))  # ("a", {"class": "answer_permalink"})
                 try:
                     date = answer_date.text
-                    if ("Updated" in date):
+                    if "Updated" in date:
                         date = date[8:]
                     else:
                         date = date[9:]
@@ -344,7 +342,7 @@ def answers(urls_list, save_path):
 # -------------------------------------------------------------
 # Users profile crawler
 def users(users_list, save_path):
-    browser = connectchrome()
+    browser = connect_chrome()
     user_index = -1
     loop_limit = len(users_list)
     print('Starting the users crawling...')
@@ -420,7 +418,7 @@ def users(users_list, save_path):
             pass
         # print(total_views)
         # print('@@@@@@@@@')
-        total_views = convertnumber(total_views)
+        total_views = convert_number(total_views)
         # print(' location : ',location)
         # print("total_views",total_views)
         # print(total_views)
@@ -469,7 +467,7 @@ def users(users_list, save_path):
         # scroll down profile for loading all answers
         print('user has ', nbanswers, ' answers')
         if int(nbanswers) > 9:
-            scrolldown(browser)
+            scroll_down(browser)
         # get answers text (we click on (more) button of each answer)
         if int(nbanswers) > 0:
             # print('scrolling down for answers collect')
@@ -492,10 +490,10 @@ def users(users_list, save_path):
                         questions_link.append(Qlink)
                         questions_date.append(QD.get_attribute("text"))
 
-                questions_date = [convertDateFormat(d) for d in questions_date]
-                answersText = browser.find_elements_by_xpath("//div[@class='q-relative spacing_log_answer_content']")
-                answersText = [' '.join(answer.text.split('\n')[:]).replace('\r', '').replace('\t', '').strip() for
-                               answer in answersText]
+                questions_date = [convert_date_format(d) for d in questions_date]
+                answers_text = browser.find_elements_by_xpath("//div[@class='q-relative spacing_log_answer_content']")
+                answers_text = [' '.join(answer.text.split('\n')[:]).replace('\r', '').replace('\t', '').strip() for
+                                answer in answers_text]
             except Exception as eans:
                 print('cant get answers')
                 print(eans)
@@ -506,7 +504,7 @@ def users(users_list, save_path):
                 try:
                     # print(ind)
                     file_user_profile.write(
-                        questions_date[ind] + '\t' + questions_link[ind].rstrip() + '\t' + answersText[
+                        questions_date[ind] + '\t' + questions_link[ind].rstrip() + '\t' + answers_text[
                             ind].rstrip() + '\n')
                 except Exception as ew:
                     # print(ew)
