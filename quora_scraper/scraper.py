@@ -184,9 +184,12 @@ def questions(topics_list, save_path):
         for html in all_htmls:
             all_links = html.find_all('a', {'href': True})
             # in one question we get 3 links and the third link is the question link
-            question_link = all_links[2]
-            question_set.add(question_link)
-
+            try:
+                question_link = all_links[2]
+                question_set.add(question_link)
+            except IndexError:
+                question_link = all_links[0]
+                question_set.add(question_link)
         # write content of set to Questions_URLs/ folder
         save_file = Path(save_path) / str(topic_term.strip('\n') + '_question_urls.txt')
         file_question_urls = open(save_file, mode='w', encoding='utf-8')
